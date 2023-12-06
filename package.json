@@ -28,6 +28,8 @@
 	"type": "module",
 	"dependencies": {
 		"@types/crypto-js": "^4.2.1",
-		"openai": "^4.20.1"
+		"class-variance-authority": "^0.7.0",
+		"openai": "^4.20.1",
+		"svelte-loading-spinners": "^0.3.4"
 	}
 }
