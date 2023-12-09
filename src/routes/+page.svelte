@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, tick } from "svelte";
   import { fade, slide, fly } from "svelte/transition";
   import CryptoJS from "crypto-js";
   import { Circle } from "svelte-loading-spinners";
   import { createDialog, melt } from "@melt-ui/svelte";
+  import { ConfettiBurst, random } from "svelte-canvas-confetti";
 
   import { createDownloadUrl } from "$lib/utils/create-download-url";
   import CoverImage from "$lib/components/CoverImage.svelte";
@@ -22,6 +23,7 @@
   let apiKeyInputOpen = false;
   let isHD = true;
   let isDragging = false;
+  let confettiBurst = false;
   let toastMessage: {
     type: App.ToastType;
     message: string;
@@ -135,6 +137,9 @@
   function handleLoad() {
     loading = false;
     imageRendered = true;
+    setTimeout(() => {
+      makeConfettiBurst();
+    }, 500);
   }
 
   function reset() {
@@ -148,6 +153,12 @@
     inputImgSrc = "";
     filename = "";
   }
+
+  const makeConfettiBurst = async () => {
+    confettiBurst = false;
+    await tick();
+    confettiBurst = true;
+  };
 </script>
 
 <div class="min-h-screen sm:h-screen w-screen relative">
@@ -346,6 +357,15 @@
 
 {#if toastMessage}
   <Toast open intent="error" bind:toastMessage />
+{/if}
+
+{#if confettiBurst}
+  <ConfettiBurst
+    origin={[
+      random((window.innerWidth / 4) * 3, window.innerWidth / 4),
+      random((window.innerHeight / 4) * 3, window.innerHeight / 4),
+    ]}
+  />
 {/if}
 
 <style>
