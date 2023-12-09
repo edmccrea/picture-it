@@ -148,7 +148,7 @@
   }
 
   function handleError(errorMessage: string) {
-    toastMessage = { type: "success", message: errorMessage };
+    toastMessage = { type: "error", message: errorMessage };
     loading = false;
     inputImgSrc = "";
     filename = "";
