@@ -221,7 +221,7 @@
           disabled={inputImgSrc ? true : false}
           id="file-input"
           type="file"
-          accept="img/*"
+          accept=".jpg, .jpeg, .png"
           bind:this={fileInput}
           on:change={() => {
             if (fileInput.files && fileInput.files.length > 0) {
