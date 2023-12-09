@@ -8,7 +8,8 @@
       variants: {
         intent: {
           primary: "bg-sky-400 hover:bg-sky-600",
-          secondary: "bg-transparent border border-sky-500 hover:bg-sky-400/10",
+          secondary:
+            "bg-transparent border border-sky-500 hover:bg-sky-400/10 text-[#333333] ",
           disabled: "bg-sky-100 hover:cursor-default",
         },
         size: {
