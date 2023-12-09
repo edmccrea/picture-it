@@ -396,7 +396,7 @@
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    background-image: url("./chevron-down.svg");
+    background-image: url("chevron-down.svg");
     background-repeat: no-repeat;
     background-position: calc(100% - 1rem) center;
     background-size: 1em;
