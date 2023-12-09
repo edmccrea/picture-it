@@ -8,6 +8,7 @@
   import { createDownloadUrl } from "$lib/utils/create-download-url";
   import CoverImage from "$lib/components/CoverImage.svelte";
   import Button from "$lib/components/Button.svelte";
+  import Toast from "$lib/components/Toast.svelte";
 
   let apiKey = "";
   let loading = false;
@@ -21,6 +22,10 @@
   let apiKeyInputOpen = false;
   let isHD = true;
   let isDragging = false;
+  let toastMessage: {
+    type: App.ToastType;
+    message: string;
+  } | null = null;
 
   const {
     elements: { trigger, portalled, overlay, content, close, title },
@@ -95,10 +100,15 @@
 
   async function generateImage() {
     if (!apiKey) {
+      toastMessage = {
+        type: "warn",
+        message: "Please enter your OpenAI API key",
+      };
       return;
     }
 
     if (!inputImgSrc) {
+      toastMessage = { type: "warn", message: "Please upload an image" };
       return;
     }
 
@@ -117,8 +127,8 @@
       const base64 = data[0].b64_json;
       downloadUrl = createDownloadUrl(base64, "image/jpeg");
     } else {
-      loading = false;
-      alert("Something went wrong");
+      const data = await res.text();
+      handleError(data);
     }
   }
 
@@ -131,33 +141,51 @@
     imageRendered = false;
     inputImgSrc = "";
   }
+
+  function handleError(errorMessage: string) {
+    toastMessage = { type: "success", message: errorMessage };
+    loading = false;
+    inputImgSrc = "";
+    filename = "";
+  }
 </script>
 
-<div class="min-h-screen h-screen w-screen">
+<div class="min-h-screen sm:h-screen w-screen relative">
   <button
     use:melt={$trigger}
     class="absolute bottom-4 right-4 px-4 py-2 shadow-xl rounded-lg bg-neutral-50"
     >Settings</button
   >
-  <div class="grid grid-cols-2 gap-8 h-full max-w-6xl mx-auto">
+  <div class="grid md:grid-cols-2 gap-0 sm:gap-8 h-full max-w-6xl mx-auto">
     <div class="h-full flex flex-col justify-center p-8">
-      <h1 class="text-6xl">
-        Lego You?<br />Cartoon You?<br /><span class="text-sky-400 font-bold"
-          >Picture It</span
+      <h1 class="text-5xl">
+        Transforming Snapshots into Art.<br /><span
+          class="font-gradient font-bold">Picture It</span
         >
       </h1>
-      <form action="" on:submit={generateImage} class="flex flex-col mt-4 w-72">
+      <form
+        action=""
+        on:submit={generateImage}
+        class="flex flex-col mt-4 w-full sm:w-72"
+      >
         <label for="style-select" class="text-sm pb-1">Select a style</label>
         <select
           name=""
           id="style-select"
           bind:value={style}
           class="py-2 pl-4 pr-10 border border-neutral-400 rounded-lg shadow-inner hover:cursor-pointer active:outline-sky-400/50 focus:outline-sky-400/50 transition-colors duration-200 ease-in"
+          disabled={loading}
         >
           <option value="lego">Lego</option>
           <option value="2d-cartoon">2D Cartoon</option>
           <option value="pixar">Disney Pixar</option>
           <option value="anime">Anime</option>
+          <option value="monster">Monster</option>
+          <option value="comic-book-hero">Comic Book Hero</option>
+          <option value="comic-book-villain">Comic Book Villain</option>
+          <option value="abstract">Abstract</option>
+          <option value="watercolor">Watercolor</option>
+          <option value="oil-painting">Oil Painting</option>
         </select>
         <label
           for="file-input"
@@ -204,9 +232,18 @@
           {/if}</Button
         >
       </form>
+      {#if imageRendered}
+        <div class="w-full sm:w-72">
+          <Button intent="secondary" class="mt-4 w-full" on:click={reset}
+            >Reset</Button
+          >
+        </div>
+      {/if}
     </div>
 
-    <div class="h-full flex items-center justify-center">
+    <div
+      class="h-full mb:12 sm:mb-0 w-full mx-auto flex items-center justify-center p-8 pb-28 sm:p-0"
+    >
       {#if !loading && !imageRendered}
         <CoverImage selectedStyle={style} />
       {:else}
@@ -307,7 +344,18 @@
   {/if}
 </div>
 
+{#if toastMessage}
+  <Toast open intent="error" bind:toastMessage />
+{/if}
+
 <style>
+  .font-gradient {
+    background: linear-gradient(90deg, #38bdf8 0%, #0c4a6e 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
   .skeleton-loader {
     position: absolute;
     top: 0;

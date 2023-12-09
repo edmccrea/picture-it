@@ -12,6 +12,14 @@ const prompts = {
   pixar:
     "Make the style of the image look like a pixar movie. It should be a a still from the movie, not a poster",
   anime: "Make the style of the image look like an anime",
+  monster: "Turn any subjects in the image into their own distinct monster",
+  "comic-book-villain":
+    "Turn any subjects in the image into a comic book villain and give the whole image a comic book style. The style of the comic book should be like marvel or dc. Give any subjects their own costume and superpowers. Change the clothes that they are wearing into a new costume.",
+  "comic-book-hero":
+    "Turn any subjects in the image into a comic book hero and give the whole image a comic book style. The style of the comic book should be like marvel or dc. Give any subjects their own costume and superpowers. Change the clothes that they are wearing into a new costume.",
+  abstract: "Make the style of the image abstract",
+  watercolor: "Make the style of the image look like a watercolor painting",
+  "oil-painting": "Make the style of the image look like an oil painting",
 };
 
 export const POST: RequestHandler = async ({ request }) => {
