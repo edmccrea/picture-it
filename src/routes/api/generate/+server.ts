@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import type { RequestHandler } from "./$types";
+import { Readable } from "stream";
 
 export const config = {
   runtime: "edge",
@@ -23,7 +24,15 @@ const prompts = {
 };
 
 export const POST: RequestHandler = async ({ request }) => {
+  // return new Response("Hello world", { status: 500 });
   try {
+    let controller: ReadableStreamDefaultController<string>;
+    const stream = new ReadableStream({
+      start(c) {
+        controller = c;
+        controller.enqueue("Starting image generation... \n");
+      },
+    });
     const requestData = await request.json();
 
     if (
@@ -72,7 +81,13 @@ export const POST: RequestHandler = async ({ request }) => {
       quality: requestData.isHD ? "hd" : "standard",
     });
 
-    return new Response(JSON.stringify(image.data));
+    if (controller) {
+      controller.enqueue(JSON.stringify(image.data));
+      controller.close();
+    }
+    console.log(stream);
+    return new Response(stream, { headers: { "Content-Type": "text/stream" } });
+    // return new Response(JSON.stringify(image.data));
   } catch (error) {
     if (error instanceof Error) {
       console.error(error);

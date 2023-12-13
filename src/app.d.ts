@@ -18,6 +18,13 @@ declare global {
       type: ToastType;
       message: string;
     }
+
+    interface ImageState {
+      inputImgSrc: string | ArrayBuffer | null;
+      resultImgSrc: string | null;
+      imageRendered: boolean;
+      downloadUrl: string;
+    }
   }
 }
 

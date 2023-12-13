@@ -10,19 +10,21 @@
   import CoverImage from "$lib/components/CoverImage.svelte";
   import Button from "$lib/components/Button.svelte";
   import Toast from "$lib/components/Toast.svelte";
+  import StyleSelect from "$lib/components/StyleSelect.svelte";
+  import FileInput from "$lib/components/FileInput.svelte";
 
   let apiKey = "";
   let loading = false;
-  let inputImgSrc: string | ArrayBuffer | null;
-  let resultImgSrc: string | null;
-  let imageRendered = false;
-  let downloadUrl = "";
-  let fileInput: HTMLInputElement;
+  let imageState: App.ImageState = {
+    inputImgSrc: null,
+    resultImgSrc: null,
+    imageRendered: false,
+    downloadUrl: "",
+  };
   let style: App.Style = "lego";
   let filename = "";
   let apiKeyInputOpen = false;
   let isHD = true;
-  let isDragging = false;
   let confettiBurst = false;
   let toastMessage: {
     type: App.ToastType;
@@ -59,47 +61,6 @@
     localStorage.setItem("encryptedMessage", encryptedMessage);
   }
 
-  function handleFileChange(file: File) {
-    const reader = new FileReader();
-    reader.onload = (event: ProgressEvent<FileReader>) => {
-      if (event.target) {
-        inputImgSrc = event.target.result as string;
-        filename = file.name;
-      }
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function handleDrop(event: DragEvent) {
-    event.preventDefault();
-    isDragging = false;
-    if (event.dataTransfer) {
-      if (event.dataTransfer.items) {
-        for (let i = 0; i < event.dataTransfer.items.length; i++) {
-          if (event.dataTransfer.items[i].kind === "file") {
-            const file: File | null = event.dataTransfer.items[i].getAsFile();
-            if (file) {
-              handleFileChange(file);
-            }
-          }
-        }
-      } else {
-        for (let i = 0; i < event.dataTransfer.files.length; i++) {
-          handleFileChange(event.dataTransfer.files[i]);
-        }
-      }
-    }
-  }
-
-  function handleDragEnter(event: DragEvent) {
-    event.preventDefault();
-    isDragging = true;
-  }
-
-  function handleDragLeave() {
-    isDragging = false;
-  }
-
   async function generateImage() {
     if (!apiKey) {
       toastMessage = {
@@ -109,7 +70,7 @@
       return;
     }
 
-    if (!inputImgSrc) {
+    if (!imageState.inputImgSrc) {
       toastMessage = { type: "warn", message: "Please upload an image" };
       return;
     }
@@ -120,14 +81,21 @@
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ key: apiKey, image: inputImgSrc, style, isHD }),
+      body: JSON.stringify({
+        key: apiKey,
+        image: imageState.inputImgSrc,
+        style,
+        isHD,
+      }),
     });
+
+    console.log(res);
 
     if (res.ok) {
       const data = await res.json();
-      resultImgSrc = `data:image/jpeg;base64,${data[0].b64_json}`;
+      imageState.resultImgSrc = `data:image/jpeg;base64,${data[0].b64_json}`;
       const base64 = data[0].b64_json;
-      downloadUrl = createDownloadUrl(base64, "image/jpeg");
+      imageState.downloadUrl = createDownloadUrl(base64, "image/jpeg");
     } else {
       const data = await res.text();
       handleError(data);
@@ -136,21 +104,21 @@
 
   function handleLoad() {
     loading = false;
-    imageRendered = true;
+    imageState.imageRendered = true;
     setTimeout(() => {
       makeConfettiBurst();
     }, 500);
   }
 
-  function reset() {
-    imageRendered = false;
-    inputImgSrc = "";
-  }
-
   function handleError(errorMessage: string) {
     toastMessage = { type: "error", message: errorMessage };
     loading = false;
-    inputImgSrc = "";
+    reset();
+  }
+
+  function reset() {
+    imageState.imageRendered = false;
+    imageState.inputImgSrc = null;
     filename = "";
   }
 
@@ -164,7 +132,7 @@
 <div class="min-h-screen sm:h-screen w-screen relative">
   <button
     use:melt={$trigger}
-    class="absolute bottom-4 right-4 px-4 py-2 shadow-xl rounded-lg bg-neutral-50"
+    class="absolute bottom-4 right-4 px-4 py-2 shadow-xl rounded-lg bg-sky-50"
     >Settings</button
   >
   <div class="grid md:grid-cols-2 gap-0 sm:gap-8 h-full max-w-6xl mx-auto">
@@ -179,60 +147,13 @@
         on:submit={generateImage}
         class="flex flex-col mt-4 w-full sm:w-72"
       >
-        <label for="style-select" class="text-sm pb-1">Select a style</label>
-        <select
-          name=""
-          id="style-select"
-          bind:value={style}
-          class="py-2 pl-4 pr-10 border border-neutral-400 rounded-lg shadow-inner hover:cursor-pointer active:outline-sky-400/50 focus:outline-sky-400/50 transition-colors duration-200 ease-in"
-          disabled={loading}
-        >
-          <option value="lego">Lego</option>
-          <option value="2d-cartoon">2D Cartoon</option>
-          <option value="pixar">Disney Pixar</option>
-          <option value="anime">Anime</option>
-          <option value="monster">Monster</option>
-          <option value="comic-book-hero">Comic Book Hero</option>
-          <option value="comic-book-villain">Comic Book Villain</option>
-          <option value="abstract">Abstract</option>
-          <option value="watercolor">Watercolor</option>
-          <option value="oil-painting">Oil Painting</option>
-        </select>
-        <label
-          for="file-input"
-          class="{inputImgSrc
-            ? ''
-            : 'hover:cursor-pointer hover:bg-neutral-200/50'} py-4 px-4 border border-neutral-400 rounded-lg shadow-sm mt-4 border-dashed flex flex-col items-center justify-center text-center {isDragging
-            ? 'bg-neutral-200/50'
-            : ''} transition-all duration-300 ease-in"
-          on:dragover={handleDragEnter}
-          on:dragleave={handleDragLeave}
-          on:drop={handleDrop}
-        >
-          {#if inputImgSrc}
-            <img src="/check.svg" alt="" in:fade />
-            <span in:fade>Image uploaded</span>
-            <span in:fade class="text-xs text-neutral-500">{filename}</span>
-          {:else}
-            <img src="/cloud-arrow-up.svg" alt="" /><span>Input an Image</span>
-          {/if}
-        </label>
-        <input
-          disabled={inputImgSrc ? true : false}
-          id="file-input"
-          type="file"
-          accept=".jpg, .jpeg, .png"
-          bind:this={fileInput}
-          on:change={() => {
-            if (fileInput.files && fileInput.files.length > 0) {
-              handleFileChange(fileInput.files[0]);
-            }
-          }}
-          class="hidden"
-        />
+        <StyleSelect {loading} bind:style />
+        <FileInput bind:imageState bind:filename />
         <Button
-          disabled={!apiKey || !inputImgSrc}
-          intent={!apiKey || !inputImgSrc || loading ? "disabled" : "primary"}
+          disabled={!apiKey || !imageState.inputImgSrc}
+          intent={!apiKey || !imageState.inputImgSrc || loading
+            ? "disabled"
+            : "primary"}
           class="mt-4 w-full"
           >{#if loading}
             <div class="h-6 flex justify-center items-center">
@@ -243,7 +164,7 @@
           {/if}</Button
         >
       </form>
-      {#if imageRendered}
+      {#if imageState.imageRendered}
         <div class="w-full sm:w-72">
           <Button intent="secondary" class="mt-4 w-full" on:click={reset}
             >Reset</Button
@@ -255,23 +176,23 @@
     <div
       class="h-full mb:12 sm:mb-0 w-full mx-auto flex items-center justify-center p-8 pb-28 sm:p-0"
     >
-      {#if !loading && !imageRendered}
+      {#if !loading && !imageState.imageRendered}
         <CoverImage selectedStyle={style} />
       {:else}
         <div
           class="w-[512px] max-h-[512px] max-w-[90vw] aspect-square overflow-hidden rounded-md shadow-sm relative"
         >
           <div class={loading ? "skeleton-loader" : "hidden"} />
-          {#if resultImgSrc}
+          {#if imageState.resultImgSrc}
             <img
-              src={resultImgSrc}
+              src={imageState.resultImgSrc}
               alt=""
               in:fade={{ duration: 200 }}
               on:load={handleLoad}
               class={loading ? "opacity-0" : "opacity-100"}
             />
             <a
-              href={downloadUrl}
+              href={imageState.downloadUrl}
               download="image.jpg"
               class="px-2 py-2 bg-white shadow-lg rounded-md absolute top-4 right-4 hover:bg-neutral-100 transition-colors duration-200"
             >
@@ -300,7 +221,7 @@
         <label for="hd" class="text-sm text-neutral-500">HD</label>
       </div>
       <form action="" on:submit={setApiKey}>
-        <div class="px-4 py-2 bg-neutral-200/50 rounded-lg mt-4">
+        <div class="px-4 py-2 bg-neutral-200/30 rounded-lg mt-4">
           <div
             class="flex justify-between hover:cursor-pointer items-center"
             on:click={() => (apiKeyInputOpen = !apiKeyInputOpen)}
@@ -390,16 +311,6 @@
     );
     background-size: 200% auto;
     animation: skeleton 2.5s linear infinite;
-  }
-
-  select {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    background-image: url("chevron-down.svg");
-    background-repeat: no-repeat;
-    background-position: calc(100% - 1rem) center;
-    background-size: 1em;
   }
 
   @keyframes skeleton {
