@@ -10,6 +10,7 @@
   import CoverImage from "$lib/components/CoverImage.svelte";
   import Button from "$lib/components/Button.svelte";
   import Toast from "$lib/components/Toast.svelte";
+  import { SSE } from "sse.js";
 
   let apiKey = "";
   let loading = false;
@@ -115,23 +116,40 @@
     }
 
     loading = true;
-    const res = await fetch("/api/generate", {
-      method: "POST",
+    const eventSource = new SSE("/api/generate", {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ key: apiKey, image: inputImgSrc, style, isHD }),
+      payload: JSON.stringify({ key: apiKey, image: inputImgSrc, style, isHD }),
     });
 
-    if (res.ok) {
-      const data = await res.json();
-      resultImgSrc = `data:image/jpeg;base64,${data[0].b64_json}`;
-      const base64 = data[0].b64_json;
-      downloadUrl = createDownloadUrl(base64, "image/jpeg");
-    } else {
-      const data = await res.text();
-      handleError(data);
-    }
+    eventSource.addEventListener("error", (event) => {
+      handleError(event.data);
+    });
+    eventSource.addEventListener("message", (event) => {
+      console.log("message", event.data);
+      const data = JSON.parse(event.data);
+    });
+
+    let accumulatedData = "";
+    eventSource.addEventListener("image", (event) => {
+      accumulatedData += event.data;
+      try {
+        const data = JSON.parse(accumulatedData);
+        accumulatedData = "";
+        resultImgSrc = `data:image/jpeg;base64,${data.data[0].b64_json}`;
+        const base64 = data.data[0].b64_json;
+        downloadUrl = createDownloadUrl(base64, "image/jpeg");
+        loading = false;
+        imageRendered = true;
+        setTimeout(() => {
+          makeConfettiBurst();
+        }, 500);
+      } catch (error) {
+        console.log("error", error);
+      }
+    });
+    eventSource.stream();
   }
 
   function handleLoad() {

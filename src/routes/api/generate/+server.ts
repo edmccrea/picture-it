@@ -35,6 +35,17 @@ export const POST: RequestHandler = async ({ request }) => {
       throw new Error("Image or key is missing");
     }
 
+    const initialMessage =
+      "event: message\ndata: " +
+      JSON.stringify({ type: "message", data: "Generating image..." }) +
+      "\n\n";
+    const encoder = new TextEncoder();
+    let data = encoder.encode(initialMessage);
+
+    const { readable, writable } = new TransformStream();
+    const writer = writable.getWriter();
+    writer.write(data);
+
     const openai = new OpenAI({ apiKey: requestData.key });
     const visionResponse = await openai.chat.completions.create({
       model: "gpt-4-vision-preview",
@@ -72,7 +83,17 @@ export const POST: RequestHandler = async ({ request }) => {
       quality: requestData.isHD ? "hd" : "standard",
     });
 
-    return new Response(JSON.stringify(image.data));
+    data = encoder.encode(
+      "event: image\ndata: " +
+        JSON.stringify({ type: "image", data: image.data }) +
+        "\n\n"
+    );
+    writer.write(data);
+    writer.close();
+
+    return new Response(readable, {
+      headers: { "Content-Type": "text/event-stream" },
+    });
   } catch (error) {
     if (error instanceof Error) {
       console.error(error);
