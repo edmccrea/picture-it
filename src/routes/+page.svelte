@@ -29,6 +29,13 @@
     type: App.ToastType;
     message: string;
   } | null = null;
+  const loadingMessages = [
+    "Fetching the pixels...",
+    "Painting the canvas...",
+    "Creating the masterpiece...",
+    "Generating the magic...",
+  ];
+  let loadingMessageIndex = 0;
 
   const {
     elements: { trigger, portalled, overlay, content, close, title },
@@ -123,16 +130,16 @@
       payload: JSON.stringify({ key: apiKey, image: inputImgSrc, style, isHD }),
     });
 
-    eventSource.addEventListener("error", (event) => {
+    eventSource.addEventListener("error", (event: MessageEvent) => {
       handleError(event.data);
     });
-    eventSource.addEventListener("message", (event) => {
-      console.log("message", event.data);
-      const data = JSON.parse(event.data);
+
+    eventSource.addEventListener("message", () => {
+      loadingMessageIndex = (loadingMessageIndex + 1) % loadingMessages.length;
     });
 
     let accumulatedData = "";
-    eventSource.addEventListener("image", (event) => {
+    eventSource.addEventListener("image", (event: MessageEvent) => {
       accumulatedData += event.data;
       try {
         const data = JSON.parse(accumulatedData);
@@ -162,13 +169,14 @@
 
   function reset() {
     imageRendered = false;
-    inputImgSrc = "";
+    inputImgSrc = null;
+    fileInput.value = "";
   }
 
   function handleError(errorMessage: string) {
     toastMessage = { type: "error", message: errorMessage };
     loading = false;
-    inputImgSrc = "";
+    inputImgSrc = null;
     filename = "";
   }
 
@@ -253,6 +261,7 @@
           disabled={!apiKey || !inputImgSrc}
           intent={!apiKey || !inputImgSrc || loading ? "disabled" : "primary"}
           class="mt-4 w-full"
+          type="submit"
           >{#if loading}
             <div class="h-6 flex justify-center items-center">
               <Circle size="16" color="#FFf" unit="px" duration="1s" />
@@ -264,15 +273,17 @@
       </form>
       {#if imageRendered}
         <div class="w-full sm:w-72">
-          <Button intent="secondary" class="mt-4 w-full" on:click={reset}
-            >Reset</Button
+          <Button
+            intent={loading ? "disabled" : "secondary"}
+            class="mt-2 w-full"
+            on:click={reset}>Reset</Button
           >
         </div>
       {/if}
     </div>
 
     <div
-      class="h-full mb:12 sm:mb-0 w-full mx-auto flex items-center justify-center p-8 pb-28 sm:p-0"
+      class="h-full mb:12 sm:mb-0 w-full mx-auto flex flex-col items-center justify-center p-8 pb-28 sm:p-0"
     >
       {#if !loading && !imageRendered}
         <CoverImage selectedStyle={style} />
@@ -281,7 +292,7 @@
           class="w-[512px] max-h-[512px] max-w-[90vw] aspect-square overflow-hidden rounded-md shadow-sm relative"
         >
           <div class={loading ? "skeleton-loader" : "hidden"} />
-          {#if resultImgSrc}
+          {#if resultImgSrc && !loading}
             <img
               src={resultImgSrc}
               alt=""
@@ -298,6 +309,13 @@
             </a>
           {/if}
         </div>
+        {#if loading}
+          {#key loadingMessageIndex}
+            <p class="text-sm mt-2" in:fade>
+              {loadingMessages[loadingMessageIndex]}
+            </p>
+          {/key}
+        {/if}
       {/if}
     </div>
   </div>
@@ -345,13 +363,13 @@
                 name="key"
                 type="password"
                 placeholder="Enter your OpenAI API key..."
-                class="w-full px-4 py-2 mt-3 bg-transparent border border-neutral-500 rounded-md shadow-inner focus:outline-none focus:ring focus:ring-sky-100 transition-all duration-300 ease-in-out"
+                class="w-full px-4 py-2 my-3 bg-transparent border border-neutral-300 rounded-md shadow-inner focus:outline-none focus:ring focus:ring-sky-100 transition-all duration-300 ease-in-out"
                 bind:value={apiKey}
               />
-              <button class="underline mt-2" type="submit">Submit</button>
             </div>
           {/if}
         </div>
+        <Button type="submit" class="mt-4">Save</Button>
       </form>
       <button use:melt={$close} class="top-4 right-4 absolute"
         ><svg
@@ -375,7 +393,7 @@
 </div>
 
 {#if toastMessage}
-  <Toast open intent="error" bind:toastMessage />
+  <Toast open bind:toastMessage />
 {/if}
 
 {#if confettiBurst}
