@@ -3,7 +3,7 @@
   import { fly } from "svelte/transition";
 
   const toast = cva(
-    "duration-300 ease-in-out rounded-md w-64 text-neutral-50 fixed top-4 right-4 flex overflow-hidden break-words shadow-lg z-50",
+    "duration-300 ease-in-out rounded-md w-64 text-neutral-50 fixed top-4 right-4 flex overflow-hidden break-words shadow-lg z-[999]",
     {
       variants: {
         intent: {
