@@ -12,6 +12,8 @@ const prompts = {
   pixar:
     "Make the style of the image look like a pixar movie. It should be a a still from the movie, not a poster",
   anime: "Make the style of the image look like an anime",
+  "old-school-anime":
+    "Make the image in the style of a traditional hand-painted cel animation, reminiscent of a simple 1980s Japanese anime",
   monster: "Turn any subjects in the image into their own distinct monster",
   "comic-book-villain":
     "Turn any subjects in the image into a comic book villain and give the whole image a comic book style. The style of the comic book should be like marvel or dc. Give any subjects their own costume and superpowers. Change the clothes that they are wearing into a new costume.",
@@ -67,7 +69,7 @@ export const POST: RequestHandler = async ({ request }) => {
             content: [
               {
                 type: "text",
-                text: "Desribe what is in this image in great detail. Give as much detail as possible about any humans in the image, especially those in the foreground. Make sure to include how they are dressed and positioned.",
+                text: "Describe what is in this image in great detail. Give as much detail as possible about any humans in the image, especially those in the foreground. Make sure to include how they are dressed and positioned.",
               },
               {
                 type: "image_url",

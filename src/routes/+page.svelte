@@ -209,6 +209,7 @@
           <option value="2d-cartoon">2D Cartoon</option>
           <option value="pixar">Disney Pixar</option>
           <option value="anime">Anime</option>
+          <option value="old-school-anime">Old School Anime</option>
           <option value="monster">Monster</option>
           <option value="comic-book-hero">Comic Book Hero</option>
           <option value="comic-book-villain">Comic Book Villain</option>
