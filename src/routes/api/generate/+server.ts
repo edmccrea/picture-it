@@ -41,6 +41,17 @@ export const POST: RequestHandler = async ({ request }) => {
       "\n\n";
     const encoder = new TextEncoder();
     let data = encoder.encode(initialMessage);
+    let intervalId = setInterval(() => {
+      data = encoder.encode(
+        "event: message\ndata: " +
+          JSON.stringify({
+            type: "message",
+            data: "Still generating image. Please be patient.",
+          }) +
+          "\n\n"
+      );
+      writer.write(data);
+    }, 5000);
 
     const { readable, writable } = new TransformStream();
     const writer = writable.getWriter();
@@ -83,6 +94,7 @@ export const POST: RequestHandler = async ({ request }) => {
         response_format: "b64_json",
         quality: requestData.isHD ? "hd" : "standard",
       });
+      clearInterval(intervalId);
 
       data = encoder.encode(
         "event: image\ndata: " +
@@ -95,7 +107,10 @@ export const POST: RequestHandler = async ({ request }) => {
 
     performApiCall();
     return new Response(readable, {
-      headers: { "Content-Type": "text/event-stream" },
+      headers: {
+        "Content-Type": "text/event-stream",
+        connection: "keep-alive",
+      },
     });
   } catch (error) {
     if (error instanceof Error) {
