@@ -22,7 +22,6 @@
   let style: App.Style = "lego";
   let filename = "";
   let apiKeyInputOpen = false;
-  let isHD = true;
   let isDragging = false;
   let confettiBurst = false;
   let toastMessage: {
@@ -36,6 +35,9 @@
     "Generating the magic...",
   ];
   let loadingMessageIndex = 0;
+  let settings = {
+    hd: true,
+  };
 
   const {
     elements: { trigger, portalled, overlay, content, close, title },
@@ -47,6 +49,11 @@
     const encryptionKey = await res.text();
     const encryptedMessage = localStorage.getItem("encryptedMessage");
 
+    const savedSettings = localStorage.getItem("settings");
+    if (savedSettings) {
+      settings = JSON.parse(savedSettings);
+    }
+
     if (encryptedMessage && encryptionKey) {
       const bytes = CryptoJS.AES.decrypt(encryptedMessage, encryptionKey);
       const decryptedMessage = bytes.toString(CryptoJS.enc.Utf8);
@@ -57,7 +64,16 @@
     }
   });
 
-  async function setApiKey() {
+  async function saveSettings() {
+    localStorage.setItem("settings", JSON.stringify(settings));
+    if (apiKey) {
+      toastMessage = {
+        type: "success",
+        message: "Settings saved",
+      };
+
+      return;
+    }
     const res = await fetch("/api/encryption-key");
     const encryptionKey = await res.text();
     const encryptedMessage = CryptoJS.AES.encrypt(
@@ -65,6 +81,11 @@
       encryptionKey
     ).toString();
     localStorage.setItem("encryptedMessage", encryptedMessage);
+
+    toastMessage = {
+      type: "success",
+      message: "Settings saved",
+    };
   }
 
   function handleFileChange(file: File) {
@@ -127,7 +148,12 @@
       headers: {
         "Content-Type": "application/json",
       },
-      payload: JSON.stringify({ key: apiKey, image: inputImgSrc, style, isHD }),
+      payload: JSON.stringify({
+        key: apiKey,
+        image: inputImgSrc,
+        style,
+        isHD: settings.hd,
+      }),
     });
 
     eventSource.addEventListener("error", (event: MessageEvent) => {
@@ -210,7 +236,7 @@
           name=""
           id="style-select"
           bind:value={style}
-          class="py-2 pl-4 pr-10 border border-neutral-400 rounded-lg shadow-inner hover:cursor-pointer active:outline-sky-400/50 focus:outline-sky-400/50 transition-colors duration-200 ease-in"
+          class="py-2 pl-4 pr-10 border border-neutral-400 rounded-lg shadow-inner hover:cursor-pointer disabled:cursor-default active:outline-sky-400/50 focus:outline-sky-400/50 transition-colors duration-200 ease-in"
           disabled={loading}
         >
           <option value="lego">Lego</option>
@@ -333,11 +359,13 @@
     >
       <h2 use:melt={$title} class="mb-2">Settings</h2>
       <div class="flex mb-2 gap-2">
-        <input type="checkbox" id="hd" bind:checked={isHD} />
+        <input type="checkbox" id="hd" bind:checked={settings.hd} />
         <label for="hd" class="text-sm text-neutral-500">HD</label>
       </div>
-      <form action="" on:submit={setApiKey}>
-        <div class="px-4 py-2 bg-neutral-200/50 rounded-lg mt-4">
+      <form action="" on:submit={saveSettings}>
+        <div
+          class="px-4 py-2 bg-neutral-200/30 rounded-lg mt-4 hover:bg-neutral-200/60 transition-all duration-300 ease-in-out"
+        >
           <div
             class="flex justify-between hover:cursor-pointer items-center"
             on:click={() => (apiKeyInputOpen = !apiKeyInputOpen)}
