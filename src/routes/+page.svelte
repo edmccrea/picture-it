@@ -5,7 +5,6 @@
   import { Circle } from "svelte-loading-spinners";
   import { createDialog, melt } from "@melt-ui/svelte";
   import { ConfettiBurst, random } from "svelte-canvas-confetti";
-
   import { createDownloadUrl } from "$lib/utils/create-download-url";
   import CoverImage from "$lib/components/CoverImage.svelte";
   import Button from "$lib/components/Button.svelte";
@@ -14,7 +13,6 @@
   import StyleSelect from "$lib/components/StyleSelect.svelte";
   import FileInput from "$lib/components/FileInput.svelte";
 
-  let apiKey = "";
   let loading = false;
   let inputImgSrc: string | ArrayBuffer | null;
   let resultImgSrc: string | null;
@@ -37,7 +35,9 @@
   ];
   let loadingMessageIndex = 0;
   let settings = {
+    apiKey: "",
     hd: true,
+    systemPrompt: "",
   };
 
   const {
@@ -46,44 +46,14 @@
   } = createDialog();
 
   onMount(async () => {
-    const res = await fetch("/api/encryption-key");
-    const encryptionKey = await res.text();
-    const encryptedMessage = localStorage.getItem("encryptedMessage");
-
     const savedSettings = localStorage.getItem("settings");
     if (savedSettings) {
       settings = JSON.parse(savedSettings);
-    }
-
-    if (encryptedMessage && encryptionKey) {
-      const bytes = CryptoJS.AES.decrypt(encryptedMessage, encryptionKey);
-      const decryptedMessage = bytes.toString(CryptoJS.enc.Utf8);
-
-      if (decryptedMessage) {
-        apiKey = decryptedMessage;
-      }
     }
   });
 
   async function saveSettings() {
     localStorage.setItem("settings", JSON.stringify(settings));
-    if (apiKey) {
-      toastMessage = {
-        type: "success",
-        heading: "Success",
-        message: "Settings saved",
-      };
-
-      return;
-    }
-    const res = await fetch("/api/encryption-key");
-    const encryptionKey = await res.text();
-    const encryptedMessage = CryptoJS.AES.encrypt(
-      apiKey,
-      encryptionKey
-    ).toString();
-    localStorage.setItem("encryptedMessage", encryptedMessage);
-
     toastMessage = {
       type: "success",
       heading: "Success",
@@ -92,7 +62,7 @@
   }
 
   async function generateImage() {
-    if (!apiKey) {
+    if (!settings.apiKey) {
       toastMessage = {
         type: "warn",
         heading: "Oops!",
@@ -116,7 +86,7 @@
         "Content-Type": "application/json",
       },
       payload: JSON.stringify({
-        key: apiKey,
+        key: settings.apiKey,
         image: inputImgSrc,
         style,
         isHD: settings.hd,
@@ -200,8 +170,10 @@
         <StyleSelect bind:style {loading} />
         <FileInput bind:inputImgSrc bind:filename />
         <Button
-          disabled={!apiKey || !inputImgSrc}
-          intent={!apiKey || !inputImgSrc || loading ? "disabled" : "primary"}
+          disabled={!settings.apiKey || !inputImgSrc}
+          intent={!settings.apiKey || !inputImgSrc || loading
+            ? "disabled"
+            : "primary"}
           class="mt-4 w-full"
           type="submit"
           >{#if loading}
@@ -308,7 +280,7 @@
                 type="password"
                 placeholder="Enter your OpenAI API key..."
                 class="w-full px-4 py-2 my-3 bg-transparent border border-neutral-300 rounded-md shadow-inner focus:outline-none focus:ring focus:ring-sky-100 transition-all duration-300 ease-in-out"
-                bind:value={apiKey}
+                bind:value={settings.apiKey}
               />
             </div>
           {/if}
