@@ -69,6 +69,7 @@
     if (apiKey) {
       toastMessage = {
         type: "success",
+        heading: "Success",
         message: "Settings saved",
       };
 
@@ -84,6 +85,7 @@
 
     toastMessage = {
       type: "success",
+      heading: "Success",
       message: "Settings saved",
     };
   }
@@ -133,13 +135,18 @@
     if (!apiKey) {
       toastMessage = {
         type: "warn",
-        message: "Please enter your OpenAI API key",
+        heading: "Oops!",
+        message: "Please enter your OpenAI API key first",
       };
       return;
     }
 
     if (!inputImgSrc) {
-      toastMessage = { type: "warn", message: "Please upload an image" };
+      toastMessage = {
+        type: "warn",
+        heading: "Oops!",
+        message: "Please upload an image",
+      };
       return;
     }
 
@@ -200,7 +207,7 @@
   }
 
   function handleError(errorMessage: string) {
-    toastMessage = { type: "error", message: errorMessage };
+    toastMessage = { type: "error", heading: "Error", message: errorMessage };
     loading = false;
     inputImgSrc = null;
     filename = "";

@@ -16,6 +16,7 @@ declare global {
 
     interface ToastMessage {
       type: ToastType;
+      heading: string;
       message: string;
     }
   }

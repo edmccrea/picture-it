@@ -2,32 +2,23 @@
   import { cva } from "class-variance-authority";
   import { fly } from "svelte/transition";
 
-  const toast = cva(
-    "duration-300 ease-in-out rounded-md w-64 text-neutral-50 fixed top-4 right-4 flex overflow-hidden break-words shadow-lg z-[999]",
-    {
-      variants: {
-        intent: {
-          info: "bg-sky-400",
-          warn: "bg-yellow-400 text-[#333]",
-          error: "bg-red-400",
-          success: "bg-green-500",
-        },
-      },
-    }
-  );
-
   const bar = cva("w-2", {
     variants: {
       intent: {
-        info: "bg-sky-700 w-2",
-        warn: "bg-yellow-600 w-2",
-        error: "bg-red-700 w-2",
-        success: "bg-green-700 w-2",
+        info: "bg-sky-500 w-2",
+        warn: "bg-yellow-500 w-2",
+        error: "bg-red-500 w-2",
+        success: "bg-green-500 w-2",
       },
     },
   });
 
   export let toastMessage: App.ToastMessage | null = null;
+
+  $: toastMessage,
+    setTimeout(() => {
+      toastMessage = null;
+    }, 4000);
 
   let intent = toastMessage?.type;
 
@@ -39,7 +30,7 @@
 {#if toastMessage}
   <div
     {...$$props}
-    class={toast({ intent })}
+    class="duration-300 ease-in-out text-[#333] rounded-md w-64 fixed top-4 right-4 flex overflow-hidden break-words shadow-lg z-[99] bg-neutral-100"
     in:fly|global={{ x: 200 }}
     out:fly|global={{ x: 200 }}
   >
@@ -53,7 +44,7 @@
       >
         <path
           d="M6 18L18 6M6 6L18 18"
-          stroke={intent === "warn" ? "#333" : "#fafafa"}
+          stroke="#333"
           stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
@@ -62,7 +53,8 @@
     >
     <div class={bar({ intent })}></div>
     <div class="pr-8 pl-4 py-4 overflow-hidden">
-      {toastMessage.message}
+      <p>{toastMessage.heading}</p>
+      <p class="text-sm opacity-80">{toastMessage.message}</p>
     </div>
   </div>
 {/if}
