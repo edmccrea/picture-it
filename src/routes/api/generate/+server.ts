@@ -13,7 +13,8 @@ const prompts = {
     "Make the style of the image look like a pixar movie. It should be a a still from the movie, not a poster",
   anime: "Make the style of the image look like an anime",
   "old-school-anime":
-    "Make the image in the style of a traditional hand-painted cel animation, reminiscent of a simple 1980s Japanese anime",
+  claymation:
+    "From this description, make the image in the style of a claymation. It should look like a still from a claymation movie and shows made by Aardman with characters like Wallace and Gromit and Shaun the Sheep",
   monster: "Turn any subjects in the image into their own distinct monster",
   "comic-book-villain":
     "Turn any subjects in the image into a comic book villain and give the whole image a comic book style. The style of the comic book should be like marvel or dc. Give any subjects their own costume and superpowers. Change the clothes that they are wearing into a new costume.",
