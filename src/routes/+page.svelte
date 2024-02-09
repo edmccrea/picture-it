@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount, tick } from "svelte";
-  import { fade, slide, fly } from "svelte/transition";
-  import CryptoJS from "crypto-js";
+  import { fade } from "svelte/transition";
   import { Circle } from "svelte-loading-spinners";
   import { createDialog, melt } from "@melt-ui/svelte";
   import { ConfettiBurst, random } from "svelte-canvas-confetti";
@@ -12,6 +11,7 @@
   import { SSE } from "sse.js";
   import StyleSelect from "$lib/components/StyleSelect.svelte";
   import FileInput from "$lib/components/FileInput.svelte";
+  import SettingsModal from "$lib/components/SettingsModal.svelte";
 
   let loading = false;
   let inputImgSrc: string | ArrayBuffer | null;
@@ -20,7 +20,6 @@
   let downloadUrl = "";
   let style: App.Style = "lego";
   let filename = "";
-  let apiKeyInputOpen = false;
   let confettiBurst = false;
   let toastMessage: {
     type: App.ToastType;
@@ -51,15 +50,6 @@
       settings = JSON.parse(savedSettings);
     }
   });
-
-  async function saveSettings() {
-    localStorage.setItem("settings", JSON.stringify(settings));
-    toastMessage = {
-      type: "success",
-      heading: "Success",
-      message: "Settings saved",
-    };
-  }
 
   async function generateImage() {
     if (!settings.apiKey) {
@@ -147,6 +137,14 @@
     await tick();
     confettiBurst = true;
   };
+
+  function showSaveSettingsToast() {
+    toastMessage = {
+      type: "success",
+      heading: "Success",
+      message: "Settings saved",
+    };
+  }
 </script>
 
 <div class="min-h-screen sm:h-screen w-screen relative">
@@ -235,78 +233,16 @@
   </div>
 </div>
 
-<div use:melt={$portalled}>
-  {#if $open}
-    <div use:melt={$overlay} class="fixed inset-0 z-50 bg-black/50" />
-    <div
-      use:melt={$content}
-      class="fixed left-1/2 top-1/2 z-50 max-h-[85vh] w-[90vw]
-    max-w-[450px] -translate-x-1/2 -translate-y-1/2 rounded-md bg-neutral-50
-    px-12 pt-12 pb-16 shadow-lg"
-      in:fly={{ y: 100, duration: 200 }}
-    >
-      <h2 use:melt={$title} class="mb-2">Settings</h2>
-      <div class="flex mb-2 gap-2">
-        <input type="checkbox" id="hd" bind:checked={settings.hd} />
-        <label for="hd" class="text-sm text-neutral-500">HD</label>
-      </div>
-      <form action="" on:submit={saveSettings}>
-        <div
-          class="px-4 py-2 bg-neutral-200/30 rounded-lg mt-4 hover:bg-neutral-200/60 transition-all duration-300 ease-in-out"
-        >
-          <div
-            class="flex justify-between hover:cursor-pointer items-center"
-            on:click={() => (apiKeyInputOpen = !apiKeyInputOpen)}
-            on:keydown={() => (apiKeyInputOpen = !apiKeyInputOpen)}
-            role="button"
-            tabindex="0"
-          >
-            <label for="key" class="text-sm text-neutral-700"
-              >Open AI API Key</label
-            >
-
-            <img
-              src="/chevron-down.svg"
-              alt=""
-              class="{apiKeyInputOpen
-                ? '-rotate-180'
-                : ''} h-4 transition-all duration-200 ease-in"
-            />
-          </div>
-          {#if apiKeyInputOpen}
-            <div transition:slide>
-              <input
-                name="key"
-                type="password"
-                placeholder="Enter your OpenAI API key..."
-                class="w-full px-4 py-2 my-3 bg-transparent border border-neutral-300 rounded-md shadow-inner focus:outline-none focus:ring focus:ring-sky-100 transition-all duration-300 ease-in-out"
-                bind:value={settings.apiKey}
-              />
-            </div>
-          {/if}
-        </div>
-        <Button type="submit" class="mt-4">Save</Button>
-      </form>
-      <button use:melt={$close} class="top-4 right-4 absolute"
-        ><svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M6 18L18 6M6 6L18 18"
-            stroke="#000"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg></button
-      >
-    </div>
-  {/if}
-</div>
+<SettingsModal
+  on:save={showSaveSettingsToast}
+  {settings}
+  {portalled}
+  {overlay}
+  {content}
+  {close}
+  {title}
+  {open}
+/>
 
 {#if toastMessage}
   <Toast open bind:toastMessage />
