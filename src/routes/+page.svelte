@@ -11,6 +11,8 @@
   import Button from "$lib/components/Button.svelte";
   import Toast from "$lib/components/Toast.svelte";
   import { SSE } from "sse.js";
+  import StyleSelect from "$lib/components/StyleSelect.svelte";
+  import FileInput from "$lib/components/FileInput.svelte";
 
   let apiKey = "";
   let loading = false;
@@ -18,14 +20,13 @@
   let resultImgSrc: string | null;
   let imageRendered = false;
   let downloadUrl = "";
-  let fileInput: HTMLInputElement;
   let style: App.Style = "lego";
   let filename = "";
   let apiKeyInputOpen = false;
-  let isDragging = false;
   let confettiBurst = false;
   let toastMessage: {
     type: App.ToastType;
+    heading: string;
     message: string;
   } | null = null;
   const loadingMessages = [
@@ -88,47 +89,6 @@
       heading: "Success",
       message: "Settings saved",
     };
-  }
-
-  function handleFileChange(file: File) {
-    const reader = new FileReader();
-    reader.onload = (event: ProgressEvent<FileReader>) => {
-      if (event.target) {
-        inputImgSrc = event.target.result as string;
-        filename = file.name;
-      }
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function handleDrop(event: DragEvent) {
-    event.preventDefault();
-    isDragging = false;
-    if (event.dataTransfer) {
-      if (event.dataTransfer.items) {
-        for (let i = 0; i < event.dataTransfer.items.length; i++) {
-          if (event.dataTransfer.items[i].kind === "file") {
-            const file: File | null = event.dataTransfer.items[i].getAsFile();
-            if (file) {
-              handleFileChange(file);
-            }
-          }
-        }
-      } else {
-        for (let i = 0; i < event.dataTransfer.files.length; i++) {
-          handleFileChange(event.dataTransfer.files[i]);
-        }
-      }
-    }
-  }
-
-  function handleDragEnter(event: DragEvent) {
-    event.preventDefault();
-    isDragging = true;
-  }
-
-  function handleDragLeave() {
-    isDragging = false;
   }
 
   async function generateImage() {
@@ -203,7 +163,6 @@
   function reset() {
     imageRendered = false;
     inputImgSrc = null;
-    fileInput.value = "";
   }
 
   function handleError(errorMessage: string) {
@@ -238,58 +197,8 @@
         on:submit={generateImage}
         class="flex flex-col mt-4 w-full sm:w-72"
       >
-        <label for="style-select" class="text-sm pb-1">Select a style</label>
-        <select
-          name=""
-          id="style-select"
-          bind:value={style}
-          class="py-2 pl-4 pr-10 border border-neutral-400 rounded-lg shadow-inner hover:cursor-pointer disabled:cursor-default active:outline-sky-400/50 focus:outline-sky-400/50 transition-colors duration-200 ease-in"
-          disabled={loading}
-        >
-          <option value="lego">Lego</option>
-          <option value="2d-cartoon">2D Cartoon</option>
-          <option value="pixar">Disney Pixar</option>
-          <option value="anime">Anime</option>
-          <option value="old-school-anime">Old School Anime</option>
-          <option value="monster">Monster</option>
-          <option value="comic-book-hero">Comic Book Hero</option>
-          <option value="comic-book-villain">Comic Book Villain</option>
-          <option value="abstract">Abstract</option>
-          <option value="watercolor">Watercolor</option>
-          <option value="oil-painting">Oil Painting</option>
-        </select>
-        <label
-          for="file-input"
-          class="{inputImgSrc
-            ? ''
-            : 'hover:cursor-pointer hover:bg-neutral-200/50'} py-4 px-4 border border-neutral-400 rounded-lg shadow-sm mt-4 border-dashed flex flex-col items-center justify-center text-center {isDragging
-            ? 'bg-neutral-200/50'
-            : ''} transition-all duration-300 ease-in"
-          on:dragover={handleDragEnter}
-          on:dragleave={handleDragLeave}
-          on:drop={handleDrop}
-        >
-          {#if inputImgSrc}
-            <img src="/check.svg" alt="" in:fade />
-            <span in:fade>Image uploaded</span>
-            <span in:fade class="text-xs text-neutral-500">{filename}</span>
-          {:else}
-            <img src="/cloud-arrow-up.svg" alt="" /><span>Input an Image</span>
-          {/if}
-        </label>
-        <input
-          disabled={inputImgSrc ? true : false}
-          id="file-input"
-          type="file"
-          accept=".jpg, .jpeg, .png"
-          bind:this={fileInput}
-          on:change={() => {
-            if (fileInput.files && fileInput.files.length > 0) {
-              handleFileChange(fileInput.files[0]);
-            }
-          }}
-          class="hidden"
-        />
+        <StyleSelect bind:style {loading} />
+        <FileInput bind:inputImgSrc bind:filename />
         <Button
           disabled={!apiKey || !inputImgSrc}
           intent={!apiKey || !inputImgSrc || loading ? "disabled" : "primary"}
@@ -462,16 +371,6 @@
     );
     background-size: 200% auto;
     animation: skeleton 2.5s linear infinite;
-  }
-
-  select {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    background-image: url("/chevron-down.svg");
-    background-repeat: no-repeat;
-    background-position: calc(100% - 1rem) center;
-    background-size: 1em;
   }
 
   @keyframes skeleton {
