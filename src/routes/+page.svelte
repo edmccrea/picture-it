@@ -27,6 +27,7 @@
     message: string;
   } | null = null;
   const loadingMessages = [
+    "Let's go!",
     "Fetching the pixels...",
     "The AI Goblins are piecing them together...",
     "Sticking them to the canvas...",

@@ -16,10 +16,7 @@ const prompts = {
   "old-school-anime":
     "Using this description, make the image in the style of a traditional hand-painted cel animation, reminiscent of a simple 1980s Japanese anime",
   simpsons:
-    // "From this description, make the image in the style of something that very closely resembles a simpsons cartoon from the show 'The Simpsons' created by Matt Groening from the late 90s/early 2000s. It should look like a still from the show. Think of characters like Homer, Marge, Bart, Lisa, and Maggie. It should be a 2D cartoon and include the signature yellow skin",
     "Based off this prompt, make the image in a style that strongly resembles that of a character from the Simpsons. Try to emulate the style from the show when it was on air in the late 90s/early 2000s.  It should look like a still from the show. It should be a 2D cartoon and include the signature yellow skin",
-  "south-park":
-    "From this description, make the image in the style of something that very closely resembles a south park cartoon from the show 'South Park'. It should look like a still from the show. Think of characters like Stan, Kyle, Cartman, and Kenny. It should be a 2D cartoon and include the signature construction paper cut-out style",
   "sock-puppet":
     "From this description, make the image in the style of a sock puppet",
   claymation:
@@ -63,7 +60,7 @@ export const POST: RequestHandler = async ({ request }) => {
           "\n\n"
       );
       writer.write(data);
-    }, 2000);
+    }, 3000);
 
     const { readable, writable } = new TransformStream();
     const writer = writable.getWriter();
@@ -96,6 +93,7 @@ export const POST: RequestHandler = async ({ request }) => {
       const basePrompt = visionResponse.choices[0].message.content;
       const stylePrompt = prompts[style];
       const prompt = requestData.systemPrompt + basePrompt + stylePrompt;
+      console.log(prompt);
       if (!prompt) {
         throw new Error("GPT Vision failed");
       }
