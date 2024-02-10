@@ -28,9 +28,21 @@
   } | null = null;
   const loadingMessages = [
     "Fetching the pixels...",
-    "Painting the canvas...",
-    "Creating the masterpiece...",
-    "Generating the magic...",
+    "The AI Goblins are piecing them together...",
+    "Sticking them to the canvas...",
+    "Almost there...",
+    "Just kidding this takes a while...",
+    "The pixels are getting tired...",
+    "The Goblins are on strike...",
+    "The pixels are on strike...",
+    "The Goblins are back!",
+    "Shipping with UPS...",
+    "Stuck in customs...",
+    "The Goblins are on strike again...",
+    "Bribing the customs officer...",
+    "The Goblins are back again!",
+    "Are we there yet?...",
+    "I've run out of loading messages...",
   ];
   let loadingMessageIndex = 0;
   let settings = {
@@ -48,7 +60,7 @@
     const savedSettings = localStorage.getItem("settings");
     if (savedSettings) {
       try {
-      settings = JSON.parse(savedSettings);
+        settings = JSON.parse(savedSettings);
       } catch (error) {
         toastMessage = {
           type: "error",
@@ -200,7 +212,7 @@
       {#if imageRendered}
         <div class="w-full sm:w-72">
           <Button
-            intent={loading ? "disabled" : "secondary"}
+            intent={loading ? "disabled" : "ghost"}
             class="mt-2 w-full"
             on:click={reset}>Reset</Button
           >
@@ -209,13 +221,13 @@
     </div>
 
     <div
-      class="h-full mb:12 sm:mb-0 w-full mx-auto flex flex-col items-center justify-center p-8 pb-28 sm:p-0"
+      class="h-full mb:12 sm:mb-0 w-full mx-auto flex flex-col items-center justify-center p-8 pb-28 sm:p-0 max-w-[100vw]"
     >
       {#if !loading && !imageRendered}
         <CoverImage selectedStyle={style} />
       {:else}
         <div
-          class="w-[512px] max-h-[512px] max-w-[90vw] aspect-square overflow-hidden rounded-md shadow-sm relative"
+          class="w-[512px] max-h-[512px] max-w-[100%] aspect-square overflow-hidden rounded-md shadow-sm relative"
         >
           <div class={loading ? "skeleton-loader" : "hidden"} />
           {#if resultImgSrc && !loading}
