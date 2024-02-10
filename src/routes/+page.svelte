@@ -181,7 +181,12 @@
           {:else}
             Generate
           {/if}</Button
-        >
+        >{#if !settings.apiKey}
+          <p class="text-xs mt-2 text-center">
+            Please enter your API key in the settings
+          </p>
+        {/if}
+        <p></p>
       </form>
       {#if imageRendered}
         <div class="w-full sm:w-72">

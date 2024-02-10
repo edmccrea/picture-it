@@ -26,6 +26,7 @@
   },
   "type": "module",
   "dependencies": {
+    "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.0",
     "openai": "^4.20.1",
     "sse.js": "^2.2.0",

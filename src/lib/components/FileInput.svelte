@@ -1,6 +1,6 @@
 <script lang="ts">
   import { fade } from "svelte/transition";
-
+  import imageCompression from "browser-image-compression";
   export let inputImgSrc: string | ArrayBuffer | null;
   export let filename: string;
 
@@ -13,15 +13,27 @@
     }
   }
 
-  function handleFileChange(file: File) {
-    const reader = new FileReader();
-    reader.onload = (event: ProgressEvent<FileReader>) => {
-      if (event.target) {
-        inputImgSrc = event.target.result as string;
-        filename = file.name;
-      }
+  async function handleFileChange(file: File) {
+    const options = {
+      maxSizeMB: 1,
+      maxWidthOrHeight: 1920,
+      useWebWorker: true,
     };
-    reader.readAsDataURL(file);
+
+    try {
+      const compressedFile = await imageCompression(file, options);
+
+      const reader = new FileReader();
+      reader.onload = (event: ProgressEvent<FileReader>) => {
+        if (event.target) {
+          inputImgSrc = event.target.result as string;
+          filename = compressedFile.name;
+        }
+      };
+      reader.readAsDataURL(compressedFile);
+    } catch (error) {
+      console.error("Error compressing image", error);
+    }
   }
 
   function handleDrop(event: DragEvent) {
