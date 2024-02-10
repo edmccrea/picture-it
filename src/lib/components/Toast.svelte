@@ -30,7 +30,7 @@
 {#if toastMessage}
   <div
     {...$$props}
-    class="duration-300 ease-in-out text-[#333] rounded-md w-64 fixed top-4 right-4 flex overflow-hidden break-words shadow-lg z-[99] bg-neutral-100"
+    class="duration-300 ease-in-out text-[#333] rounded-md w-64 fixed top-4 right-4 flex overflow-hidden break-words shadow-lg z-[99] bg-neutral-50"
     in:fly|global={{ x: 200 }}
     out:fly|global={{ x: 200 }}
   >
