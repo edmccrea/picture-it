@@ -35,7 +35,7 @@
   let loadingMessageIndex = 0;
   let settings = {
     apiKey: "",
-    hd: true,
+    hd: false,
     systemPrompt: "",
   };
 
@@ -47,7 +47,15 @@
   onMount(async () => {
     const savedSettings = localStorage.getItem("settings");
     if (savedSettings) {
+      try {
       settings = JSON.parse(savedSettings);
+      } catch (error) {
+        toastMessage = {
+          type: "error",
+          heading: "Error",
+          message: "Failed to load settings",
+        };
+      }
     }
   });
 
@@ -80,6 +88,7 @@
         image: inputImgSrc,
         style,
         isHD: settings.hd,
+        systemPrompt: settings.systemPrompt,
       }),
     });
 
@@ -240,7 +249,8 @@
 
 <SettingsModal
   on:save={showSaveSettingsToast}
-  {settings}
+  bind:settings
+  bind:toastMessage
   {portalled}
   {overlay}
   {content}
