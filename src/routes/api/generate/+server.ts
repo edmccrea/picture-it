@@ -63,7 +63,7 @@ export const POST: RequestHandler = async ({ request }) => {
           "\n\n"
       );
       writer.write(data);
-    }, 5000);
+    }, 2000);
 
     const { readable, writable } = new TransformStream();
     const writer = writable.getWriter();
@@ -95,7 +95,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
       const basePrompt = visionResponse.choices[0].message.content;
       const stylePrompt = prompts[style];
-      const prompt = basePrompt + stylePrompt;
+      const prompt = requestData.systemPrompt + basePrompt + stylePrompt;
       if (!prompt) {
         throw new Error("GPT Vision failed");
       }
