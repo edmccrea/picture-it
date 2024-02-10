@@ -93,7 +93,6 @@ export const POST: RequestHandler = async ({ request }) => {
       const basePrompt = visionResponse.choices[0].message.content;
       const stylePrompt = prompts[style];
       const prompt = requestData.systemPrompt + basePrompt + stylePrompt;
-      console.log(prompt);
       if (!prompt) {
         throw new Error("GPT Vision failed");
       }
