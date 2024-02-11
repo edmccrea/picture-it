@@ -64,7 +64,7 @@
           name="prompt"
           id=""
           rows="3"
-          class="w-full mt-1 px-4 py-2 text-sm text-neutral-500 border border-neutral-400 rounded-lg shadow-inner resize-none active:outline-sky-400/50 focus:outline-sky-400/50 transition-colors duration-200 ease-in"
+          class="w-full mt-1 px-4 py-2 text-neutral-500 border border-neutral-400 rounded-lg shadow-inner resize-none active:outline-sky-400/50 focus:outline-sky-400/50 transition-colors duration-200 ease-in"
           placeholder="Enter a system prompt..."
         ></textarea>
         <div
@@ -95,7 +95,7 @@
                 name="key"
                 type="password"
                 placeholder="Enter your OpenAI API key..."
-                class="text-sm w-full px-4 py-2 my-3 bg-transparent border border-neutral-300 rounded-md shadow-inner focus:outline-none focus:ring focus:ring-sky-100 transition-all duration-300 ease-in-out"
+                class="w-full px-4 py-2 my-3 bg-transparent border border-neutral-300 rounded-md shadow-inner focus:outline-none focus:ring focus:ring-sky-100 transition-all duration-300 ease-in-out"
                 bind:value={settings.apiKey}
               />
             </div>
