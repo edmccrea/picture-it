@@ -7,7 +7,8 @@
       intent: {
         primary: "bg-sky-400 hover:bg-sky-600 text-neutral-50",
         secondary: "bg-sky-900 border hover:bg-sky-900/70 text-neutral-50",
-        disabled: "bg-sky-100 hover:cursor-default text-neutral-50",
+        disabled:
+          "bg-sky-100 hover:cursor-default text-neutral-50 pointer-events-none",
         ghost: "bg-transparent  hover:bg-sky-100 text-neutral-500",
       },
       size: {

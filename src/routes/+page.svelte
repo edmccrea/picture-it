@@ -222,7 +222,7 @@
     </div>
 
     <div
-      class="h-full mb:12 sm:mb-0 w-full mx-auto flex flex-col items-center justify-center p-8 pb-28 sm:p-0 max-w-[100vw]"
+      class="h-full mb:12 sm:mb-0 w-full mx-auto flex flex-col items-center justify-center p-8 pt-0 md:pt-8 pb-28 sm:p-0 max-w-[100vw]"
     >
       {#if !loading && !imageRendered}
         <CoverImage selectedStyle={style} />
