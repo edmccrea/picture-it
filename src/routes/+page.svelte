@@ -2,7 +2,6 @@
   import { onMount, tick } from "svelte";
   import { fade } from "svelte/transition";
   import { Circle } from "svelte-loading-spinners";
-  import { createDialog, melt } from "@melt-ui/svelte";
   import { ConfettiBurst, random } from "svelte-canvas-confetti";
   import { createDownloadUrl } from "$lib/utils/create-download-url";
   import CoverImage from "$lib/components/CoverImage.svelte";
@@ -12,11 +11,13 @@
   import StyleSelect from "$lib/components/StyleSelect.svelte";
   import FileInput from "$lib/components/FileInput.svelte";
   import SettingsModal from "$lib/components/SettingsModal.svelte";
+  import PromptModal from "$lib/components/PromptModal.svelte";
 
   let loading = false;
   let inputImgSrc: string | ArrayBuffer | null;
   let resultImgSrc: string | null;
   let imageRendered = false;
+  let responsePrompt = "";
   let downloadUrl = "";
   let style: App.Style = "lego";
   let filename = "";
@@ -52,11 +53,6 @@
     systemPrompt: "",
   };
 
-  const {
-    elements: { trigger, portalled, overlay, content, close, title },
-    states: { open },
-  } = createDialog();
-
   onMount(async () => {
     const savedSettings = localStorage.getItem("settings");
     if (savedSettings) {
@@ -91,6 +87,7 @@
       return;
     }
 
+    responsePrompt = "";
     loading = true;
     const eventSource = new SSE("/api/generate", {
       headers: {
@@ -111,6 +108,11 @@
 
     eventSource.addEventListener("message", () => {
       loadingMessageIndex = (loadingMessageIndex + 1) % loadingMessages.length;
+    });
+
+    eventSource.addEventListener("prompt", (event: MessageEvent) => {
+      const parsedPrompt = JSON.parse(event.data);
+      responsePrompt = parsedPrompt.data;
     });
 
     let accumulatedData = "";
@@ -145,6 +147,7 @@
   function reset() {
     imageRendered = false;
     inputImgSrc = null;
+    responsePrompt = "";
   }
 
   function handleError(errorMessage: string) {
@@ -170,11 +173,6 @@
 </script>
 
 <div class="min-h-screen sm:h-screen w-screen relative">
-  <button
-    use:melt={$trigger}
-    class="absolute bottom-4 right-4 px-4 py-2 shadow-xl rounded-lg bg-neutral-50"
-    >Settings</button
-  >
   <div class="grid md:grid-cols-2 gap-0 sm:gap-8 h-full max-w-6xl mx-auto">
     <div class="h-full flex flex-col justify-center p-8">
       <h1 class="text-5xl">
@@ -256,19 +254,16 @@
       {/if}
     </div>
   </div>
-</div>
+  {#if inputImgSrc && responsePrompt}
+    <PromptModal prompt={responsePrompt} />
+  {/if}
 
-<SettingsModal
-  on:save={showSaveSettingsToast}
-  bind:settings
-  bind:toastMessage
-  {portalled}
-  {overlay}
-  {content}
-  {close}
-  {title}
-  {open}
-/>
+  <SettingsModal
+    on:save={showSaveSettingsToast}
+    bind:settings
+    bind:toastMessage
+  />
+</div>
 
 {#if toastMessage}
   <Toast open bind:toastMessage />

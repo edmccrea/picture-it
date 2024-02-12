@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
   import { fly, slide } from "svelte/transition";
-  import { melt } from "@melt-ui/svelte";
+  import { createDialog, melt } from "@melt-ui/svelte";
   import Button from "./Button.svelte";
 
   export let settings: {
@@ -10,12 +10,11 @@
     systemPrompt: string;
   };
   export let toastMessage: App.ToastMessage | null;
-  export let portalled: any;
-  export let overlay: any;
-  export let content: any;
-  export let close: any;
-  export let title: any;
-  export let open: any;
+
+  const {
+    elements: { trigger, portalled, overlay, content, close, title },
+    states: { open },
+  } = createDialog();
 
   const dispatch = createEventDispatcher();
   let apiKeyInputOpen = false;
@@ -39,6 +38,12 @@
     };
   }
 </script>
+
+<button
+  use:melt={$trigger}
+  class="absolute bottom-4 right-4 px-4 py-2 shadow-xl rounded-lg bg-neutral-50"
+  >Settings</button
+>
 
 <div use:melt={$portalled}>
   {#if $open}
