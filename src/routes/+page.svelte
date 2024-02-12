@@ -210,12 +210,10 @@
         {/if}
         <p></p>
       </form>
-      {#if imageRendered}
+      {#if imageRendered && !loading}
         <div class="w-full sm:w-72">
-          <Button
-            intent={loading ? "disabled" : "ghost"}
-            class="mt-2 w-full"
-            on:click={reset}>Reset</Button
+          <Button intent="ghost" class="mt-2 w-full" on:click={reset}
+            >Reset</Button
           >
         </div>
       {/if}

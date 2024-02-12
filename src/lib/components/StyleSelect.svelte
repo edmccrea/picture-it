@@ -17,6 +17,7 @@
   <option value="anime">Anime</option>
   <option value="old-school-anime">Old School Anime</option>
   <option value="simpsons">Simpsons</option>
+  <option value="south-park">South Park</option>
   <option value="sock-puppet">Sock Puppet</option>
   <option value="claymation">Claymation</option>
   <option value="monster">Monster</option>
